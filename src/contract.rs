@@ -229,7 +229,21 @@ pub mod execute {
             return Err(Unauthorized {});
         }
         #[allow(deprecated)]
-        
+        let contract: Contract = Contract {
+            constructor: None,
+            functions: BTreeMap::from_iter(vec![(
+                "set_winner_list".to_string(),
+                vec![Function {
+                    name: "set_winner_list".to_string(),
+                    inputs: vec![
+                        Param {
+                            name: "_winner_infos".to_string(),
+                            kind: ParamType::Array(Box::new(WinnerInfo))
+                        }
+                    ]
+                }]
+            )])
+        }
     }
 
     pub fn set_reward_token(
