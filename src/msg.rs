@@ -11,6 +11,12 @@ pub struct InstantiateMsg {
 }
 
 #[cw_serde]
+pub struct WinnerInfo {
+    pub winner: String,
+    pub claimable_amount: Uint256
+}
+
+#[cw_serde]
 pub enum ExecuteMsg {
     SetEthPaloma {},
     SetArbPaloma {},

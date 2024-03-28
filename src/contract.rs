@@ -76,6 +76,7 @@ pub fn execute(
 
 pub mod execute {
     use super::*;
+    use crate::msg::WinnerInfo;
     use crate::ContractError::{AllPending, Unauthorized};
     use cosmwasm_std::Uint256;
     use ethabi::Address;
@@ -167,6 +168,68 @@ pub mod execute {
                 metadata: state.metadata,
             }))
             .add_attribute("action", "update_compass"))
+    }
+
+    pub fn send_reward(
+        deps: DepsMut,
+        info: MessageInfo,
+        amount: Uint256,
+    ) -> Result<Response<PalomaMsg>, ContractError> {
+        let state = STATE.load(deps.storage)?;
+        if state.owner != info.sender {
+            return Err(Unauthorized {});
+        }
+        #[allow(deprecated)]
+        let contract: Contract = Contract {
+            constructor: None,
+            functions: BTreeMap::from_iter(vec![(
+                "send_reward".to_string(),
+                vec![Function {
+                    name: "send_reward".to_string(),
+                    inputs: vec![Param {
+                        name: "_amount".to_string(),
+                        kind: ParamType::Uint(256),
+                        internal_type: None,
+                    }],
+                    outputs: Vec::new(),
+                    constant: None,
+                    state_mutability: StateMutability::NonPayable,
+                }],
+            )]),
+            events: BTreeMap::new(),
+            errors: BTreeMap::new(),
+            receive: false,
+            fallback: false,
+        };
+
+        Ok(Response::new()
+            .add_message(CosmosMsg::Custom(PalomaMsg {
+                job_id: state.job_eth_id,
+                payload: Binary(
+                    contract
+                        .function("send_reward")
+                        .unwrap()
+                        .encode_input(&[Token::Uint(Uint::from_big_endian(
+                            &amount.to_be_bytes(),
+                        ))])
+                        .unwrap(),
+                ),
+                metadata: state.metadata,
+            }))
+            .add_attribute("action", "send_reward"))
+    }
+
+    pub fn set_winner_list(
+        deps: DepsMut,
+        info: MessageInfo,
+        winner_infos: Vec<WinnerInfo>,
+    ) -> Result<Response<PalomaMsg>, ContractError> {
+        let state = STATE.load(deps.storage)?;
+        if state.owner != info.sender {
+            return Err(Unauthorized {});
+        }
+        #[allow(deprecated)]
+        
     }
 
     pub fn set_reward_token(
