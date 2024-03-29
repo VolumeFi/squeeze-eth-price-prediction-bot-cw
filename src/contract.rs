@@ -215,6 +215,7 @@ pub mod execute {
             .add_attribute("action", "send_reward"))
     }
 
+    #[allow(clippy::vec_init_then_push)]
     pub fn set_winner_list(
         deps: DepsMut,
         info: MessageInfo,
@@ -425,6 +426,7 @@ pub mod execute {
             .add_attribute("action", "update_compass"))
     }
 
+    #[allow(clippy::vec_init_then_push)]
     pub fn set_active_epoch(
         deps: DepsMut,
         info: MessageInfo,
