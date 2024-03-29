@@ -9,7 +9,7 @@ use crate::state::{State, STATE};
 use cosmwasm_std::CosmosMsg;
 use ethabi::{Contract, Function, Param, ParamType, StateMutability, Token, Uint};
 use std::collections::BTreeMap;
-use std::str::FroMStr;
+use std::str::FromStr;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io::juice-bot-eth-predictor-cw";
@@ -44,7 +44,6 @@ pub fn instantiate(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
-    env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response<PalomaMsg>, ContractError> {
@@ -77,7 +76,8 @@ pub fn execute(
 pub mod execute {
     use super::*;
     use crate::msg::WinnerInfo;
-    use crate::ContractError::{AllPending, Unauthorized};
+    use crate::msg::EpochInfo;
+    use crate::ContractError::{Unauthorized};
     use cosmwasm_std::Uint256;
     use ethabi::Address;
 
@@ -238,12 +238,47 @@ pub mod execute {
                     inputs: vec![
                         Param {
                             name: "_winner_infos".to_string(),
-                            kind: ParamType::Array(Box::new(WinnerInfo))
-                        }
-                    ]
-                }]
-            )])
+                            kind: ParamType::Array(Box::new(
+                                    ParamType::Tuple(vec![
+                                        ParamType::Address,
+                                        ParamType::Uint(256),
+                                    ]),
+                            )),
+                            internal_type: None,
+                        },
+                    ],
+                    outputs: Vec::new(),
+                    constant: None,
+                    state_mutability: StateMutability::NonPayable,
+                }],
+            )]),
+            events: BTreeMap::new(),
+            errors: BTreeMap::new(),
+            receive: false,
+            fallback: false,
+        };
+        // let mut token_winner_infos: Vec[Token] = vec![];
+        let mut token_winner_info: Vec<Token> = vec![];
+        for winner_info in winner_infos {
+            let mut token_winner_info_element: Vec<Token> = vec![];
+            token_winner_info_element.push(Token::Address(Address::from_str(winner_info.winner.as_str()).unwrap()));
+            token_winner_info_element.push(Token::Uint(Uint::from_big_endian(&winner_info.claimable_amount.to_be_bytes())));
+            token_winner_info.push(Token::Tuple(token_winner_info_element));
         }
+        // token_winner_infos.push(Token::Array(token_winner_info));
+        Ok(Response::new()
+            .add_message(CosmosMsg::Custom(PalomaMsg {
+                job_id: state.job_eth_id,
+                payload: Binary(
+                    contract
+                        .function("set_winner_list")
+                        .unwrap()
+                        .encode_input(token_winner_info.as_slice())
+                        .unwrap(),
+                ),
+                metadata: state.metadata,
+            }))
+            .add_attribute("action", "set_winner_list"))
     }
 
     pub fn set_reward_token(
@@ -256,6 +291,7 @@ pub mod execute {
         if state.owner != info.sender {
             return Err(Unauthorized {});
         }
+        let new_reward_token_address: Address = Address::from_str(new_reward_token.as_str()).unwrap();
         #[allow(deprecated)]
         let contract: Contract = Contract {
             constructor: None,
@@ -272,7 +308,7 @@ pub mod execute {
                         Param {
                             name: "_new_decimals".to_string(),
                             kind: ParamType::Uint(256),
-                            inetrnal_type: None,
+                            internal_type: None,
                         },
                     ],
                     outputs: Vec::new(),
@@ -292,7 +328,7 @@ pub mod execute {
                     contract
                         .function("set_reward_token")
                         .unwrap()
-                        .encode_input(&[Token::Address(new_reward_token)])
+                        .encode_input(&[Token::Address(new_reward_token_address)])
                         .unwrap()
                         .encode_input(&[Token::Uint(Uint::from_big_endian(
                             &new_decimals.to_be_bytes(),
@@ -391,6 +427,68 @@ pub mod execute {
                 metadata: state.metadata,
             }))
             .add_attribute("action", "update_compass"))
+    }
+
+    pub fn set_active_epoch(
+        deps: DepsMut,
+        info: MessageInfo,
+        epoch_info: EpochInfo,
+    ) -> Result<Response<PalomaMsg>, ContractError> {
+        assert!(!epoch_info.is_empty(), "empty epoch_info");
+        let state = STATE.load(deps.storage)?;
+        if state.owner != info.sender {
+            return Err(Unauthorized {});
+        }
+        #[allow(deprecated)]
+        let contract: Contract = Contract {
+            constructor: None,
+            functions: BTreeMap::from_iter(vec![(
+                "set_active_epoch".to_string(),
+                vec![Function {
+                    name: "set_active_epoch".to_string(),
+                    inputs: vec![
+                        Param {
+                            name: "_epoch_info".to_string(),
+                            kind: ParamType::Tuple(vec![
+                                    ParamType::Uint(256),
+                                    ParamType::Uint(256),
+                                    ParamType::Uint(256),
+                                    ParamType::Uint(256),
+                                ]),
+                            internal_type: None,
+                        },
+                    ],
+                    outputs: Vec::new(),
+                    constant: None,
+                    state_mutability: StateMutability::NonPayable,
+                }],
+            )]),
+            events: BTreeMap::new(),
+            errors: BTreeMap::new(),
+            receive: false,
+            fallback: false,
+        };
+
+        let mut token_epoch_info;
+        let mut token_epoch_info_element: Vec<Token> = vec![];
+        token_epoch_info_element.push(Token::Uint(Uint::from_big_endian(&epoch_info.epoch_id.to_be_bytes())));
+        token_epoch_info_element.push(Token::Uint(Uint::from_big_endian(&epoch_info.competition_start.to_be_bytes())));
+        token_epoch_info_element.push(Token::Uint(Uint::from_big_endian(&epoch_info.competition_end.to_be_bytes())));
+        token_epoch_info_element.push(Token::Uint(Uint::from_big_endian(&epoch_info.entry_cnt.to_be_bytes())));
+        token_epoch_info = Token::Tuple(token_epoch_info_element);
+        Ok(Response::new()
+            .add_message(CosmosMsg::Custom(PalomaMsg {
+                job_id: state.job_arb_id,
+                payload: Binary(
+                    contract
+                        .function("set_active_epoch")
+                        .unwrap()
+                        .encode_input(&[token_epoch_info])
+                        .unwrap(),
+                ),
+                metadata: state.metadata,
+            }))
+            .add_attribute("action", "set_active_epoch"))
     }
 }
 
