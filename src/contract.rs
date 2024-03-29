@@ -249,7 +249,7 @@ pub mod execute {
             receive: false,
             fallback: false,
         };
-        // let mut token_winner_infos: Vec[Token] = vec![];
+
         let mut token_winner_info: Vec<Token> = vec![];
         for winner_info in winner_infos {
             let mut token_winner_info_element: Vec<Token> = vec![];
@@ -261,7 +261,7 @@ pub mod execute {
             )));
             token_winner_info.push(Token::Tuple(token_winner_info_element));
         }
-        // token_winner_infos.push(Token::Array(token_winner_info));
+
         Ok(Response::new()
             .add_message(CosmosMsg::Custom(PalomaMsg {
                 job_id: state.job_eth_id,
@@ -287,8 +287,7 @@ pub mod execute {
         if state.owner != info.sender {
             return Err(Unauthorized {});
         }
-        let new_reward_token_address =
-            Address::from_str(new_reward_token.as_str()).unwrap();
+        let new_reward_token_address = Address::from_str(new_reward_token.as_str()).unwrap();
         #[allow(deprecated)]
         let contract: Contract = Contract {
             constructor: None,
@@ -320,9 +319,7 @@ pub mod execute {
         };
         let tokens = vec![
             Token::Address(new_reward_token_address),
-            Token::Uint(Uint::from_big_endian(
-                &new_decimals.to_be_bytes(),
-            )),
+            Token::Uint(Uint::from_big_endian(&new_decimals.to_be_bytes())),
         ];
         Ok(Response::new()
             .add_message(CosmosMsg::Custom(PalomaMsg {
