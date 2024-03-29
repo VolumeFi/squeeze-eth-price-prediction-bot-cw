@@ -13,7 +13,7 @@ pub struct InstantiateMsg {
 #[cw_serde]
 pub struct WinnerInfo {
     pub winner: String,
-    pub claimable_amount: Uint256
+    pub claimable_amount: Uint256,
 }
 
 #[cw_serde]
@@ -73,6 +73,7 @@ pub enum QueryMsg {
     // GetCount returns the current count as a json-encoded number
     #[returns(GetJobIdResponse)]
     GetEthJobId {},
+    #[returns(GetJobIdResponse)]
     GetArbJobId {},
 }
 
