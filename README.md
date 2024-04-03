@@ -8,9 +8,21 @@ This is a CosmWasm smart contract to manage ETH price prediction game vyper cont
 
 Run `set_paloma` function on CompetitionEth Vyper smart contract to register this contract address data in the Vyper contract.
 
+| Key | Type | Description |
+|-----|------|-------------|
+| -   | -    | -           |
+
 ### UpdateEthCompass
 
+Run `update_compass` function on CompetitionEth Vyper smart contract to update the EVM-compass address.
+
+| Key         | Type   | Description                                               |
+|-------------|--------|-----------------------------------------------------------|
+| new_compass | String | New evm-compass address for competitionEth vyper contract |
+
 ### SetRewardToken
+
+
 
 ### SendReward
 

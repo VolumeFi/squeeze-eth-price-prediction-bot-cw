@@ -138,7 +138,7 @@ pub mod execute {
                 vec![Function {
                     name: "update_compass".to_string(),
                     inputs: vec![Param {
-                        name: "new_compass".to_string(),
+                        name: "_new_compass".to_string(),
                         kind: ParamType::Address,
                         internal_type: None,
                     }],
@@ -396,7 +396,7 @@ pub mod execute {
                 vec![Function {
                     name: "update_compass".to_string(),
                     inputs: vec![Param {
-                        name: "new_compass".to_string(),
+                        name: "_new_compass".to_string(),
                         kind: ParamType::Address,
                         internal_type: None,
                     }],
