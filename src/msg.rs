@@ -30,13 +30,6 @@ pub enum ExecuteMsg {
     UpdateEthCompass {
         new_compass: String,
     },
-    SetRewardToken {
-        new_reward_token: String,
-        new_decimals: Uint256,
-    },
-    SendReward {
-        amount: Uint256,
-    },
     SetWinnerList {
         winner_infos: Vec<WinnerInfo>,
     },
