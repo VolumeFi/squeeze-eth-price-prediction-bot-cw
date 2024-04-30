@@ -52,11 +52,6 @@ pub fn execute(
         ExecuteMsg::UpdateEthCompass { new_compass } => {
             execute::update_eth_compass(deps, info, new_compass)
         }
-        ExecuteMsg::SetRewardToken {
-            new_reward_token,
-            new_decimals,
-        } => execute::set_reward_token(deps, info, new_reward_token, new_decimals),
-        ExecuteMsg::SendReward { amount } => execute::send_reward(deps, info, amount),
         ExecuteMsg::SetWinnerList { winner_infos } => {
             execute::set_winner_list(deps, info, winner_infos)
         }
@@ -168,53 +163,6 @@ pub mod execute {
             .add_attribute("action", "update_compass"))
     }
 
-    pub fn send_reward(
-        deps: DepsMut,
-        info: MessageInfo,
-        amount: Uint256,
-    ) -> Result<Response<PalomaMsg>, ContractError> {
-        let state = STATE.load(deps.storage)?;
-        if state.owner != info.sender {
-            return Err(Unauthorized {});
-        }
-        #[allow(deprecated)]
-        let contract: Contract = Contract {
-            constructor: None,
-            functions: BTreeMap::from_iter(vec![(
-                "send_reward".to_string(),
-                vec![Function {
-                    name: "send_reward".to_string(),
-                    inputs: vec![Param {
-                        name: "_amount".to_string(),
-                        kind: ParamType::Uint(256),
-                        internal_type: None,
-                    }],
-                    outputs: Vec::new(),
-                    constant: None,
-                    state_mutability: StateMutability::NonPayable,
-                }],
-            )]),
-            events: BTreeMap::new(),
-            errors: BTreeMap::new(),
-            receive: false,
-            fallback: false,
-        };
-
-        Ok(Response::new()
-            .add_message(CosmosMsg::Custom(PalomaMsg {
-                job_id: state.job_eth_id,
-                payload: Binary(
-                    contract
-                        .function("send_reward")
-                        .unwrap()
-                        .encode_input(&[Token::Uint(Uint::from_big_endian(&amount.to_be_bytes()))])
-                        .unwrap(),
-                ),
-                metadata: state.metadata,
-            }))
-            .add_attribute("action", "send_reward"))
-    }
-
     #[allow(clippy::vec_init_then_push)]
     pub fn set_winner_list(
         deps: DepsMut,
@@ -276,65 +224,6 @@ pub mod execute {
                 metadata: state.metadata,
             }))
             .add_attribute("action", "set_winner_list"))
-    }
-
-    pub fn set_reward_token(
-        deps: DepsMut,
-        info: MessageInfo,
-        new_reward_token: String,
-        new_decimals: Uint256,
-    ) -> Result<Response<PalomaMsg>, ContractError> {
-        let state = STATE.load(deps.storage)?;
-        if state.owner != info.sender {
-            return Err(Unauthorized {});
-        }
-        let new_reward_token_address = Address::from_str(new_reward_token.as_str()).unwrap();
-        #[allow(deprecated)]
-        let contract: Contract = Contract {
-            constructor: None,
-            functions: BTreeMap::from_iter(vec![(
-                "set_reward_token".to_string(),
-                vec![Function {
-                    name: "set_reward_token".to_string(),
-                    inputs: vec![
-                        Param {
-                            name: "_new_reward_token".to_string(),
-                            kind: ParamType::Address,
-                            internal_type: None,
-                        },
-                        Param {
-                            name: "_new_decimals".to_string(),
-                            kind: ParamType::Uint(256),
-                            internal_type: None,
-                        },
-                    ],
-                    outputs: Vec::new(),
-                    constant: None,
-                    state_mutability: StateMutability::NonPayable,
-                }],
-            )]),
-            events: BTreeMap::new(),
-            errors: BTreeMap::new(),
-            receive: false,
-            fallback: false,
-        };
-        let tokens = vec![
-            Token::Address(new_reward_token_address),
-            Token::Uint(Uint::from_big_endian(&new_decimals.to_be_bytes())),
-        ];
-        Ok(Response::new()
-            .add_message(CosmosMsg::Custom(PalomaMsg {
-                job_id: state.job_eth_id,
-                payload: Binary(
-                    contract
-                        .function("set_reward_token")
-                        .unwrap()
-                        .encode_input(tokens.as_slice())
-                        .unwrap(),
-                ),
-                metadata: state.metadata,
-            }))
-            .add_attribute("action", "set_reward_token"))
     }
 
     pub fn set_arb_paloma(
