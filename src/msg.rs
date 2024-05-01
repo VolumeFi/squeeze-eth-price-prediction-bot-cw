@@ -27,19 +27,11 @@ pub struct EpochInfo {
 #[cw_serde]
 pub enum ExecuteMsg {
     SetEthPaloma {},
-    UpdateEthCompass {
-        new_compass: String,
-    },
-    SetWinnerList {
-        winner_infos: Vec<WinnerInfo>,
-    },
+    UpdateEthCompass { new_compass: String },
+    SetWinnerList { winner_infos: Vec<WinnerInfo> },
     SetArbPaloma {},
-    UpdateArbCompass {
-        new_compass: String,
-    },
-    SetActiveEpoch {
-        epoch_info: EpochInfo,
-    },
+    UpdateArbCompass { new_compass: String },
+    SetActiveEpoch { epoch_info: EpochInfo },
 }
 
 #[cw_serde]
