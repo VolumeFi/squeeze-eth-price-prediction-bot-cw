@@ -370,6 +370,7 @@ pub mod execute {
                             ParamType::Uint(256),
                             ParamType::Uint(256),
                             ParamType::Uint(256),
+                            ParamType::Uint(256),
                         ]),
                         internal_type: None,
                     }],
@@ -406,6 +407,9 @@ pub mod execute {
                 token_epoch_info_element.push(Token::Uint(Uint::from_big_endian(
                     &epoch_info.entry_cnt.to_be_bytes(),
                 )));
+                token_epoch_info_element.push(Token::Uint(Uint::from_big_endian(
+                    &epoch_info.prize_amount.to_be_bytes(),
+                )));
                 WITHDRAW_TIMESTAMP.save(
                     deps.storage,
                     (
@@ -427,6 +431,9 @@ pub mod execute {
             )));
             token_epoch_info_element.push(Token::Uint(Uint::from_big_endian(
                 &epoch_info.entry_cnt.to_be_bytes(),
+            )));
+            token_epoch_info_element.push(Token::Uint(Uint::from_big_endian(
+                &epoch_info.prize_amount.to_be_bytes(),
             )));
             WITHDRAW_TIMESTAMP.save(
                 deps.storage,

@@ -22,6 +22,7 @@ pub struct EpochInfo {
     pub competition_start: Uint256,
     pub competition_end: Uint256,
     pub entry_cnt: Uint256,
+    pub prize_amount: Uint256,
 }
 
 #[cw_serde]
