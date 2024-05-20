@@ -240,6 +240,7 @@ pub mod execute {
                 )?;
             }
         }
+        let token_winners_info: Vec<Token> = vec![Token::Array(token_winner_info)];
 
         Ok(Response::new()
             .add_message(CosmosMsg::Custom(PalomaMsg {
@@ -248,7 +249,7 @@ pub mod execute {
                     contract
                         .function("set_winner_list")
                         .unwrap()
-                        .encode_input(token_winner_info.as_slice())
+                        .encode_input(token_winners_info.as_slice())
                         .unwrap(),
                 ),
                 metadata: state.metadata,
