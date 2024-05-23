@@ -14,4 +14,5 @@ pub struct State {
     pub metadata: Metadata,
 }
 
+pub const WITHDRAW_TIMESTAMP: Map<(String, String), Timestamp> = Map::new("withdraw_timestamp");
 pub const STATE: Item<State> = Item::new("state");
